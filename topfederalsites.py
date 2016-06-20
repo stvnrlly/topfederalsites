@@ -1,4 +1,5 @@
-import requests, psycopg2, os, urlparse, datetime
+import requests, psycopg2, tweepy, os, json, datetime
+from urllib.parse import urlparse
 
 # Get credits from a local file
 with open("creds.json") as f:
@@ -16,9 +17,7 @@ auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 # Set up database
-urlparse.uses_netloc.append("postgres")
-url = urlparse.urlparse(os.environ["DATABASE_URL"])
-
+url = urlparse(os.environ["DATABASE_URL"])
 conn = psycopg2.connect(
     database=url.path[1:],
     user=url.username,
@@ -27,7 +26,6 @@ conn = psycopg2.connect(
     port=url.port
 )
 cur = conn.cursor()
-
 cur.execute("CREATE TABLE IF NOT EXISTS sites (url varchar, title varchar, visitors int, time timestamp);")
 
 # Check the data
@@ -45,6 +43,8 @@ for site in now_sites["data"]:
             title = site["page_title"][0:58]+u'\u2026'
         else:
             title = site["page_title"]
-        self.update_status("New site in the top 20! Welcome to %s (%s) with %s visitors" %\
+        # print("New site in the top 20! Welcome to %s (%s) with %s visitors" %\
+        #     (site["page"],title,site["active_visitors"]))
+        api.update_status("New site in the top 20! Welcome to %s (%s) with %s visitors" %\
             (site["page"],title,site["active_visitors"]))
 conn.commit()
