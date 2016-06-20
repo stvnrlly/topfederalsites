@@ -28,6 +28,8 @@ conn = psycopg2.connect(
 )
 cur = conn.cursor()
 
+cur.execute("CREATE TABLE IF NOT EXISTS sites (url varchar, title varchar, visitors int, time timestamp);")
+
 # Check the data
 now_sites = requests.get("https://analytics.usa.gov/data/live/top-pages-realtime.json").json()
 cur.execute("SELECT url FROM sites;")
